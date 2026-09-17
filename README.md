@@ -13,12 +13,16 @@ Open **Configuration → Word Mask**.
 | Replacements | `Gielinor=Runescape` | One `find=replace` pair per line |
 | Case sensitive | off | Off matches any casing |
 | Whole word | on | On only replaces complete words |
+| Highlight replacements | on | Color the swapped text |
+| Highlight color | dark magenta `#8B008B` | RuneLite color picker |
 
 ```
 Gielinor=Runescape
 # comments start with #
 Lumbridge=Tutorial Town
 ```
+
+Highlight uses the game's `<col=rrggbb>` tags, so it shows in NPC/player dialog, books, chat, and menus. Overhead speech bubbles do not parse those tags, so they get the replacement without color.
 
 ## What it touches
 
@@ -41,7 +45,7 @@ Log in, enable **Word Mask**, talk to an NPC or open a book.
 
 ## Plugin Hub
 
-1. This repository is public.
+1. Push this repository (must be public).
 2. Fork [runelite/plugin-hub](https://github.com/runelite/plugin-hub).
 3. Add `plugins/word-mask`:
 

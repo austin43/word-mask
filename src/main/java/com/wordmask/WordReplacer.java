@@ -21,6 +21,11 @@ public final class WordReplacer
 
 	public void parse(String configText, boolean caseSensitive, boolean wholeWord)
 	{
+		parse(configText, caseSensitive, wholeWord, null);
+	}
+
+	public void parse(String configText, boolean caseSensitive, boolean wholeWord, String highlightHex)
+	{
 		this.caseSensitive = caseSensitive;
 
 		Map<String, String> map = new LinkedHashMap<>();
@@ -52,13 +57,18 @@ public final class WordReplacer
 		List<Rule> parsed = new ArrayList<>(map.size());
 		List<String> needleList = new ArrayList<>(map.size());
 		int flags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
+		boolean colorize = highlightHex != null && !highlightHex.isEmpty();
 
 		for (Map.Entry<String, String> entry : map.entrySet())
 		{
 			String find = entry.getKey();
 			String quoted = Pattern.quote(find);
 			Pattern pattern = Pattern.compile(wholeWord ? "\\b" + quoted + "\\b" : quoted, flags);
-			parsed.add(new Rule(pattern, Matcher.quoteReplacement(entry.getValue()), find.length()));
+			String plain = Matcher.quoteReplacement(entry.getValue());
+			String colored = colorize
+				? "<col=" + highlightHex + ">" + plain + "</col>"
+				: plain;
+			parsed.add(new Rule(pattern, plain, colored, find.length()));
 			needleList.add(caseSensitive ? find : find.toLowerCase(Locale.ROOT));
 		}
 
@@ -80,6 +90,11 @@ public final class WordReplacer
 
 	public String replace(String text)
 	{
+		return replace(text, true);
+	}
+
+	public String replace(String text, boolean color)
+	{
 		if (text == null || text.isEmpty() || rules.isEmpty() || !mightMatch(text))
 		{
 			return text;
@@ -88,7 +103,7 @@ public final class WordReplacer
 		String result = text;
 		for (Rule rule : rules)
 		{
-			result = rule.pattern.matcher(result).replaceAll(rule.replacement);
+			result = rule.pattern.matcher(result).replaceAll(color ? rule.colored : rule.plain);
 		}
 		return result;
 	}
@@ -109,13 +124,15 @@ public final class WordReplacer
 	private static final class Rule
 	{
 		private final Pattern pattern;
-		private final String replacement;
+		private final String plain;
+		private final String colored;
 		private final int findLength;
 
-		private Rule(Pattern pattern, String replacement, int findLength)
+		private Rule(Pattern pattern, String plain, String colored, int findLength)
 		{
 			this.pattern = pattern;
-			this.replacement = replacement;
+			this.plain = plain;
+			this.colored = colored;
 			this.findLength = findLength;
 		}
 	}

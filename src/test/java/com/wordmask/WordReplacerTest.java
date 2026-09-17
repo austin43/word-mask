@@ -96,6 +96,34 @@ public class WordReplacerTest
 		Assert.assertEquals("Gielinor", replacer.replace("Gielinor"));
 	}
 
+	@Test
+	public void highlightWrapsReplacementInColourTag()
+	{
+		WordReplacer replacer = new WordReplacer();
+		replacer.parse("Gielinor=Runescape", false, true, "8b008b");
+		Assert.assertEquals(
+			"Welcome to <col=8b008b>Runescape</col>!",
+			replacer.replace("Welcome to Gielinor!"));
+	}
+
+	@Test
+	public void highlightCanBeSkippedForOverhead()
+	{
+		WordReplacer replacer = new WordReplacer();
+		replacer.parse("Gielinor=Runescape", false, true, "8b008b");
+		Assert.assertEquals("Welcome to Runescape!", replacer.replace("Welcome to Gielinor!", false));
+	}
+
+	@Test
+	public void highlightNestsInsideExistingColourTags()
+	{
+		WordReplacer replacer = new WordReplacer();
+		replacer.parse("Gielinor=Runescape", false, true, "8b008b");
+		Assert.assertEquals(
+			"Welcome to <col=ff9040><col=8b008b>Runescape</col></col>!",
+			replacer.replace("Welcome to <col=ff9040>Gielinor</col>!"));
+	}
+
 	private static WordReplacer replacer(String config, boolean caseSensitive, boolean wholeWord)
 	{
 		WordReplacer replacer = new WordReplacer();

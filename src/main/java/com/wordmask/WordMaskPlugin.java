@@ -1,6 +1,7 @@
 package com.wordmask;
 
 import com.google.inject.Provides;
+import java.awt.Color;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -114,7 +115,8 @@ public class WordMaskPlugin extends Plugin
 			return;
 		}
 
-		String replaced = replacer.replace(original);
+		// Overhead bubbles do not parse <col> tags.
+		String replaced = replacer.replace(original, false);
 		if (!replaced.equals(original))
 		{
 			event.getActor().setOverheadText(replaced);
@@ -153,7 +155,16 @@ public class WordMaskPlugin extends Plugin
 
 	private void rebuild()
 	{
-		replacer.parse(config.replacements(), config.caseSensitive(), config.wholeWord());
+		String hex = null;
+		if (config.highlight())
+		{
+			Color color = config.highlightColor();
+			if (color != null)
+			{
+				hex = String.format("%06x", color.getRGB() & 0xFFFFFF);
+			}
+		}
+		replacer.parse(config.replacements(), config.caseSensitive(), config.wholeWord(), hex);
 	}
 
 	private void walk(Widget widget)
